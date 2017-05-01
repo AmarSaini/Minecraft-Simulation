@@ -257,8 +257,55 @@ public:
 				}
 			}
 		}
-
 	}
+	void normalize()
+	{
+		double max, min;
+		for (int i = 0; i < 25; ++i)
+		{
+			for (int j = 0; j < 25; ++j)
+			{
+				for (int k = 0; k < 10; ++k)
+				{
+					double val = grid.perlin3(i/25.0, j/25.0, k/10.0);
+					if (i == 0 && j == 0 && k == 0)
+						max = min = val;
+					else
+					{
+						if (val > max)
+						{
+							max = val;
+						}
+						if (val < min)
+						{
+							min = val;
+						}
+					}
+				}
+			}
+		}
+
+		for (int i = 0; i < 25; ++i)
+		{
+			for (int j = 0; j < 25; ++j)
+			{
+				for (int k = 0; k < 10; ++k)
+				{
+					double val = grid.perlin3(i/25.0, j/25.0, k/10.0);
+					val = (val-min)/(max-min); 
+					for (int c = 1; c <= categories; ++c)
+					{
+						if (val < c*1.0/categories)
+						{
+							chunk[i][j][k] = c;
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+
 	int get(int i, int j, int k)
 	{
 		return chunk[i][j][k];

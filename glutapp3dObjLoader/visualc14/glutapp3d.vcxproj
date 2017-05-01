@@ -123,6 +123,7 @@
     <ClCompile Include="..\gsim\gs_model_obj.cpp" />
     <ClCompile Include="..\gsim\gs_string.cpp" />
     <ClCompile Include="..\gsim\gs_strings.cpp" />
+    <ClCompile Include="..\Perlin.cpp" />
     <ClCompile Include="..\so_axis.cpp" />
     <ClCompile Include="..\app_window.cpp" />
     <ClCompile Include="..\glut_window.cpp" />

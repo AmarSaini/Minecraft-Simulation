@@ -293,13 +293,9 @@ void SoCubes::build ( )
 
 			   else if (data.chunk[i][j][k] == data.stone_id) {
 
-				   if (checkTop(blockType[i][j]) == 0) {
-					   blockType[i][j][k] = 1;
-				   }
-
-				   else {
-					   blockType[i][j][k] = 2;
-				   }
+				   
+				   blockType[i][j][k] = 2;
+				   
 			   }
 
 			   else if (data.chunk[i][j][k] == data.air_id) {

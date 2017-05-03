@@ -393,7 +393,10 @@ public:
 			{
 				chunk[i][j][k] = chunk[i][j][k-1];
 			}
-			chunk[i][j][0] = 0;
+			if ( d == 0)
+				chunk[i][j][0] = dirt_id;
+			else
+				chunk[i][j][0] = air_id;
 		}
 	}
 

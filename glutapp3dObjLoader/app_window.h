@@ -13,6 +13,7 @@
 # include "so_model.h"
 # include "so_model2.h"
 # include "so_model3.h"
+# include "so_cubes.h"
 
 // The functionality of your application should be implemented inside AppWindow
 class AppWindow : public GlutWindow
@@ -26,6 +27,8 @@ class AppWindow : public GlutWindow
     SoModel head, body, lArm, rArm, lLeg, rLeg;
 	SoModel2 headShadow, bodyShadow, lArmShadow, rArmShadow, lLegShadow, rLegShadow;
 	SoModel3 background;
+
+	SoCubes myCubes;
 
     // Scene data:
     bool  _viewaxis;

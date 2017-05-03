@@ -53,6 +53,8 @@ void AppWindow::initPrograms ()
    rLegShadow.init();
    background.init();
 
+   myCubes.init();
+
    
 
    // set light:

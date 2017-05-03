@@ -128,9 +128,6 @@
     <ClInclude Include="..\gsim\gs_manager.h">
       <Filter>graphsim tools</Filter>
     </ClInclude>
-    <ClInclude Include="..\so_myobject.h">
-      <Filter>myapp</Filter>
-    </ClInclude>
     <ClInclude Include="..\gsim\gs_image.h" />
     <ClInclude Include="..\gsim\gs_shared.h" />
     <ClInclude Include="..\gsim\stb_image.h" />
@@ -138,6 +135,9 @@
     <ClInclude Include="..\so_model2.h" />
     <ClInclude Include="..\so_model3.h" />
     <ClInclude Include="..\so_cubes.h" />
+    <ClInclude Include="..\so_myobject.h">
+      <Filter>ogl tools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="myapp">

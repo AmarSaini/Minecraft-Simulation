@@ -7,10 +7,95 @@ SoCubes::SoCubes()
  }
 
 // init is called only once:
+
+void SoCubes::createCube(GsColor myColor, double& myX, double& myY, double& myZ, double& sideLength) {
+
+	GsVec topNorthEast = GsVec(myX, myY, myZ);
+	GsVec topSouthEast = GsVec(myX, myY, myZ - sideLength);
+	GsVec topSouthWest = GsVec(myX - sideLength, myY, myZ - sideLength);
+	GsVec topNorthWest = GsVec(myX - sideLength, myY, myZ);
+
+	GsVec bottomNorthEast = GsVec(myX, myY - sideLength, myZ);
+	GsVec bottomSouthEast = GsVec(myX, myY - sideLength, myZ - sideLength);
+	GsVec bottomSouthWest = GsVec(myX - sideLength, myY - sideLength, myZ - sideLength);
+	GsVec bottomNorthWest = GsVec(myX - sideLength, myY - sideLength, myZ);
+
+	// Top Face
+
+	P.push() = topNorthEast;
+	P.push() = topSouthEast;
+	P.push() = topSouthWest;
+
+	P.push() = topSouthWest;
+	P.push() = topNorthWest;
+	P.push() = topNorthEast;
+
+	// Bottom Face
+
+	P.push() = bottomNorthEast;
+	P.push() = bottomSouthEast;
+	P.push() = bottomSouthWest;
+
+	P.push() = bottomSouthWest;
+	P.push() = bottomNorthWest;
+	P.push() = bottomNorthEast;
+
+
+	// Front Face
+
+	P.push() = topSouthWest;
+	P.push() = topSouthEast;
+	P.push() = bottomSouthEast;
+
+	P.push() = bottomSouthEast;
+	P.push() = bottomSouthWest;
+	P.push() = topSouthWest;
+
+	// Right Face
+
+	P.push() = topSouthEast;
+	P.push() = topNorthEast;
+	P.push() = bottomNorthEast;
+
+	P.push() = bottomNorthEast;
+	P.push() = bottomSouthEast;
+	P.push() = topSouthEast;
+
+
+	// Back Face
+
+	P.push() = topNorthEast;
+	P.push() = topNorthWest;
+	P.push() = bottomNorthWest;
+
+	P.push() = bottomNorthWest;
+	P.push() = bottomNorthEast;
+	P.push() = topNorthEast;
+
+
+	// Left Face
+
+	P.push() = topNorthWest;
+	P.push() = topSouthWest;
+	P.push() = bottomSouthWest;
+
+	P.push() = bottomSouthWest;
+	P.push() = bottomNorthWest;
+	P.push() = topNorthWest;
+
+
+	for (int i = 0; i < 36; i++) {
+
+		C.push() = myColor;
+
+	}
+
+}
+
 void SoCubes::init ()
  {
 
-	 data.print();
+	//data.print();
 
    // Build program:
    _vsh.load_and_compile ( GL_VERTEX_SHADER, "../mcol_flat.vert" );
@@ -31,6 +116,47 @@ void SoCubes::build ( )
 
    P.size(0); C.size(0); // set size to zero
    
+   double xCord = 1.0;
+   double yCord = -0.1;
+   double zCord = 1.0;
+
+   double sideLen = 2.0/50;
+
+   for (int k = 0; k < 10; ++k)
+   {
+	   for (int j = 0; j < 50; ++j)
+	   {
+		   for (int i = 0; i < 50; ++i)
+		   {
+			   if (data.chunk[i][j][k] == data.air_id) {
+
+				   createCube(GsColor::blue, xCord, yCord, zCord, sideLen);
+				   
+			   }
+			   else if (data.chunk[i][j][k] == data.stone_id) {
+
+				   createCube(GsColor::gray, xCord, yCord, zCord, sideLen);
+				   
+			   }
+			   else if (data.chunk[i][j][k] == data.dirt_id) {
+
+				   createCube(GsColor::brown, xCord, yCord, zCord, sideLen);
+				   
+			   }
+
+			   zCord -= sideLen;
+
+		   }
+
+		   zCord = 1.0;
+		   xCord -= sideLen;
+	   }
+
+	   xCord = 1.0;
+	   yCord -= sideLen;
+
+   }
+
 
    // send data to OpenGL buffers:
    glBindVertexArray ( va[0] );
@@ -64,7 +190,7 @@ void SoCubes::draw ( GsMat& tr, GsMat& pr )
 
    // Draw:
    glBindVertexArray ( va[0] );
-   glDrawArrays ( GL_LINES, 0, _numpoints );
+   glDrawArrays ( GL_TRIANGLES, 0, _numpoints );
    glBindVertexArray(0); // break the existing vertex array object binding.
  }
 

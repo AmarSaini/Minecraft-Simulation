@@ -67,7 +67,7 @@ class Grid3
 	int N; // dimension of the 3d cube grid;
 	vector< vector< vector<GradVec> > > cube;
 public:
-	Grid3(int n = 100)
+	Grid3(int n = 10)
 	{
 		N = n;
 		vector< vector< vector<GradVec> > > tempVec(N+1, vector< vector<GradVec> >(N+1, vector<GradVec>(N+1)));
@@ -317,16 +317,17 @@ public:
 
 class Terrain
 {
-	int chunk[50][50][10];
 	Grid3 cube;
 	int heightmap[50][50];
 public:
 	int dirt_id;
 	int stone_id;
 	int air_id;
-	Terrain()
+	int chunk[50][50][10];
+	Terrain(int seed_size = 10)
 	{
 		air_id = 0;
+		cube = Grid3(seed_size);
 		cube.initialize();
 		double min, max;
 		min = max = cube.perlin3(0, 0, 0);

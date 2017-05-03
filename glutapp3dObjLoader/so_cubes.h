@@ -24,6 +24,7 @@ class SoCubes : public GlObjects
 
    public :
     SoCubes ();
+	void createCube(GsColor myColor, double& myX, double& myY, double& myZ, double& sideLength);
     void init ();
     void build ();
     void draw ( GsMat& tr, GsMat& pr );

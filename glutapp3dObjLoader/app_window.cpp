@@ -438,6 +438,10 @@ void AppWindow::glutDisplay ()
     { _axis.build(1.0f); // axis has radius 1.0
     }
 
+   if (myCubes.changed) {
+	   myCubes.build();
+   }
+
    // Define our scene transformation:
    GsMat rx, ry, stransf;
    rx.rotx ( _rotx );
@@ -465,6 +469,9 @@ void AppWindow::glutDisplay ()
 
    // Draw:
    // if ( _viewaxis ) _axis.draw ( stransf, sproj );
+
+
+   myCubes.draw(stransf, sproj);
 
    GsMat headTransformation;
    computeHeadTransformation(headTransformation);
@@ -516,9 +523,9 @@ void AppWindow::glutDisplay ()
    computeShadowMatrix(rLegShadowMatrix);
    rLegShadow.draw(stransf * rLegShadowMatrix  * rLegTransformation, sproj, _light);
 
-   GsMat backgroundMatrix;
-   computeBackgroundTransformation(backgroundMatrix);
-   background.draw(stransf*backgroundMatrix, sproj, _light);
+   //GsMat backgroundMatrix;
+   //computeBackgroundTransformation(backgroundMatrix);
+   //background.draw(stransf*backgroundMatrix, sproj, _light);
 
    // Swap buffers and draw:
    glFlush();         // flush the pipeline (usually not necessary)

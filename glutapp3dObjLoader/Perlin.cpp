@@ -117,8 +117,8 @@ public:
 
 	double fade(double t)
 	{
-		return t;
-		//return t * t * t * (t * (t * 6 - 15) + 10);
+		// return t;
+		return t * t * t * (t * (t * 6 - 15) + 10);
 	}
 
 	// input:
@@ -212,15 +212,15 @@ public:
 		double v = fade(y);
 		double w = fade(z);
 
-		double topfront = (dot000 + dot100 + u)/3;
-		double botfront = (dot010 + dot110 + u)/3;
-		double front = (topfront+v)/2;
+		double topfront = dot000 + u*(dot100-dot000);
+		double botfront = dot010 + u*(dot110-dot010);
+		double front = topfront + v*(botfront-topfront);
 
-		double topback = (dot001 + dot101 + u)/3;
-		double botback = (dot011 + dot111 + u)/3;
-		double back = (topback+v)/2;
+		double topback = dot001 + u*(dot101-dot001);
+		double botback = dot011 + u*(dot111-dot011);
+		double back = topback + v*(botback-topback);
 
-		double avg = (front + back + w)/3;
+		double avg = front + w*(back-front);
 
 		return avg;
 	}
@@ -312,28 +312,111 @@ public:
 	}
 };
 
-// int main()
-// {
-// 	int num_categories = 10;
+class Terrain
+{
+	int chunk[50][50][10];
+	Grid3 cube;
+	int heightmap[50][50];
+public:
+	int dirt_id;
+	int stone_id;
+	int air_id;
+	Terrain()
+	{
+		air_id = 0;
+		cube.initialize();
+		double min, max;
+		min = max = cube.perlin3(0, 0, 0);
+		for (int i = 0; i < 50; ++i)
+		{
+			for (int j = 0; j < 50; ++j)
+			{
+				for (int k = 0; k < 10; ++k)
+				{
+					double val = cube.perlin3(i/50.0, j/50.0, k/10.0);
+					if (val > max)
+						max = val;
+					if (val < min)
+						min = val;
+				}
+			}
+		}
 
-// 	GradVec test;
+		double surface_mean = 0;
+		for (int i = 0; i < 50; ++i)
+		{
+			for (int j = 0; j < 50; ++j)
+			{
+				double height = 0;
+				for (int k = 0; k < 10; ++k)
+				{
+					double val = (cube.perlin3(i/50.0, j/50.0, k/10.0)-min)/(max-min);
+					height += val;
+					chunk[i][j][k] = (val < 0.5)? 1 : 2;
+				}
+				heightmap[i][j] = 10 - height/2;
+				surface_mean += chunk[i][j][0];
+			}
+		}
 
-// 	cout << test.x << ", " << test.y << ", " << test.z << endl;
+		surface_mean /= 2500;
+		if (surface_mean < 1.5)
+		{
+			dirt_id = 1;
+			stone_id = 2;
+		}
+		else
+		{
+			dirt_id = 2;
+			stone_id = 1;
+		}
 
-// 	Grid3 test_cube = Grid3(100);
-// 	test_cube.initialize(false);
+		for (int i = 0; i < 50; ++i)
+		{
+			for (int j = 0; j < 50; ++j)
+			{
+				press(i, j, 10-heightmap[i][j]);
+			}
+		}
+	}
 
-// 	Chunk chunk = Chunk(num_categories); 
-// 	for (int k = 0; k < 10; ++k)
-// 	{
-// 		for (int j = 0; j < 10; ++j)
-// 		{
-// 			for (int i = 0; i < 10; ++i)
-// 			{
-// 				cout << chunk.get(i, j, k) << ", ";
-// 			}
-// 			cout << endl;
-// 		}
-// 		cout << "--------------" << endl;
-// 	}
-// }
+	void press(int i, int j, int down)
+	{
+		if (down < 0) return;
+		for (int d = 0; d < down; ++d)
+		{
+			for (int k = 9; k > 0; k--)
+			{
+				chunk[i][j][k] = chunk[i][j][k-1];
+			}
+			chunk[i][j][0] = 0;
+		}
+	}
+
+	int get(int i, int j, int k)
+	{
+		return chunk[i][j][k];
+	}
+
+	void print()
+	{
+		cout << "Terrain: " << endl;
+		for (int k = 0; k < 10; ++k)
+		{
+			for (int j = 0; j < 20; ++j)
+			{
+				for (int i = 0; i < 20; ++i)
+				{
+					if (chunk[i][j][k] == air_id)
+						cout << "  air  ,";
+					else if (chunk[i][j][k] == stone_id)
+						cout << " stone ,";
+					else if (chunk[i][j][k] == dirt_id)
+						cout << "  dirt ,";
+				}
+				cout << endl;
+			}
+			cout << "-----------------" << endl;
+		}
+	}
+};

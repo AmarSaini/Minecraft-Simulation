@@ -1,6 +1,5 @@
 c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\vc140.pdb
 c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\vc140.idb
-c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\so_model.obj
 c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\ogl_tools.obj
 c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\gs_vec2.obj
 c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\gs_vec.obj
@@ -12,6 +11,7 @@ c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj
 c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\glut_window.obj
 c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\app_window.obj
 c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\so_axis.obj
+c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\perlin.obj
 c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\gs_strings.obj
 c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\gs_string.obj
 c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\gs_model_obj.obj
@@ -23,6 +23,7 @@ c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj
 c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\so_myobject.obj
 c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\so_model3.obj
 c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\so_model2.obj
+c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\so_model.obj
 c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\objloader.ilk
 c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\objloader.exe
 c:\users\brian\desktop\cse 170\graphics-project\glutapp3dobjloader\visualc14\obj\objloader_debug\objloader.pdb

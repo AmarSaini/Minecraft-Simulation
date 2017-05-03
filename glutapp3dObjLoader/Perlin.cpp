@@ -7,19 +7,22 @@
 using namespace std;
 
 
-random_device rd;
-mt19937 generator(rd());
-double twister(double d)
-{
-	return generator()/d;
-}
+
 
 class GradVec
 {
+	mt19937 generator;
+
+	double twister(double d)
+	{
+		return generator()/d;
+	}
 public:
 	double x, y, z;
 	GradVec()
 	{
+		random_device rd;
+		generator.seed(rd());
 		x = twister(1000.0);
 		y = twister(1000.0);
 		z = twister(1000.0);
@@ -44,9 +47,9 @@ public:
 
 	void random_samp()
 	{
-		x = rd();
-		y = rd();
-		z = rd();
+		x = twister(1000.0);
+		y = twister(1000.0);
+		z = twister(1000.0);
 
 		double mag = sqrt(x*x + y*y + z*z);
 		x /= mag;

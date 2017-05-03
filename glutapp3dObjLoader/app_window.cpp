@@ -15,7 +15,7 @@ AppWindow::AppWindow ( const char* label, int x, int y, int w, int h )
    _roty = -2.0;
    _w = w;
    _h = h;
-   scale = 0.04;
+   scale = 0.01;
    headRotate = 0;
    lArmRotate = 0;
    rArmRotate = 0;
@@ -76,7 +76,7 @@ static void printInfo ( GsModel& m )
 
 void AppWindow::loadModel ( int model )
  {
-   float f = 0.04f;
+   float f = 0.01f;
    GsString file;
 
    // Normal Models
@@ -471,7 +471,7 @@ void AppWindow::glutDisplay ()
    // if ( _viewaxis ) _axis.draw ( stransf, sproj );
 
 
-   myCubes.draw(stransf, sproj);
+   myCubes.draw(stransf, sproj, _light);
 
    GsMat headTransformation;
    computeHeadTransformation(headTransformation);

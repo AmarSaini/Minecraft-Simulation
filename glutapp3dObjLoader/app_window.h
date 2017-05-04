@@ -17,6 +17,29 @@
 # include "curve_eval.h"
 # include "so_cloud.h"
 
+class chunkStruc {
+public:
+	SoCubes* myChunk;
+	double topBound;
+	double rightBound;
+	bool drawnTop;
+	bool drawnRight;
+
+	chunkStruc() {
+
+	}
+
+	chunkStruc(SoCubes* myChunk1, double topBound1, double rightBound1) {
+
+		myChunk = myChunk1;
+		topBound = topBound1;
+		rightBound = rightBound1;
+		drawnTop = false;
+		drawnRight = false;
+
+	}
+
+};
 
 // The functionality of your application should be implemented inside AppWindow
 class AppWindow : public GlutWindow
@@ -32,8 +55,10 @@ class AppWindow : public GlutWindow
 	SoModel3 background;
 
 	Terrain data;
-	SoCubes myCubes;
-	SoCubes myCubes2;
+
+	vector<chunkStruc*> myChunks;
+	vector<GsMat*> chunkLocs;
+
 	SoCloud myCloud;
 
 	GsArray<GsVec> myCurvePoints;
@@ -70,6 +95,7 @@ class AppWindow : public GlutWindow
     void loadModel ( int model );
 	void animate();
     GsVec2 windowToScene ( const GsVec2& v );
+	void checkNewChunks();
 	void computeCloudTransformation(GsMat& transformation);
 	void computeHeadTransformation(GsMat& transformation);
 	void computeLArmTransformation(GsMat& transformation);

@@ -12,7 +12,7 @@ AppWindow::AppWindow ( const char* label, int x, int y, int w, int h )
    _viewaxis = true;
    _fovy = GS_TORAD(60.0f);
    _rotx = .6;
-   _roty = -2.0;
+   _roty = 0;
    _w = w;
    _h = h;
    scale = 0.01;
@@ -22,7 +22,7 @@ AppWindow::AppWindow ( const char* label, int x, int y, int w, int h )
    bodyRotate = 0;
    lLegRotate = 0;
    rLegRotate = 0;
-   moveX = 0.5;
+   moveX = -0.5;
    moveY = 0.0;
    moveZ = 0.5;
    lLegCheck = true;
@@ -63,7 +63,7 @@ AppWindow::AppWindow ( const char* label, int x, int y, int w, int h )
 void AppWindow::initPrograms ()
  {
    // Init my scene objects:
-   _axis.init ();
+   _axis.init();
    head.init();
    body.init();
    lArm.init();
@@ -77,10 +77,21 @@ void AppWindow::initPrograms ()
    lLegShadow.init();
    rLegShadow.init();
    background.init();
+   
+   SoCubes* myCubes = new SoCubes;
+   myCubes->init();
 
-   myCubes.init();
-   myCubes2.init();
+
+   myChunks.push_back(new chunkStruc(myCubes, 0.0, 0.0));
+
+   GsMat* tempMat = new GsMat();
+
+   tempMat->translation(GsVec(0.0, 0.0, 0.0));
+
+   chunkLocs.push_back(tempMat);
+
    myCloud.init();
+
 
    
 
@@ -202,9 +213,7 @@ void AppWindow::loadModel ( int model )
    
    // background.build();
 
-   myCubes.build(data);
-   data.load(false, true, false, false);
-   myCubes2.build(data);
+   myChunks[0]->myChunk->build(data);
 
    myCloud.build();
 
@@ -371,7 +380,7 @@ void AppWindow::glutSpecial ( int key, int x, int y )
 			rArmRotate = 0;
 			lLegRotate = 0;
 			rLegRotate = 0;
-			bodyRotate = 15;
+			bodyRotate = 25;
 			moving = 4;
 
 		}
@@ -388,7 +397,7 @@ void AppWindow::glutSpecial ( int key, int x, int y )
 			  rArmRotate = 0;
 			  lLegRotate = 0;
 			  rLegRotate = 0;
-			  bodyRotate = -15;
+			  bodyRotate = -25;
 			  moving = 3;
 
 		  }
@@ -470,6 +479,8 @@ void AppWindow::glutDisplay ()
     { _axis.build(1.0f); // axis has radius 1.0
     }
 
+   checkNewChunks();
+
    // Define our scene transformation:
    GsMat rx, ry, stransf;
    rx.rotx ( _rotx );
@@ -481,6 +492,7 @@ void AppWindow::glutDisplay ()
    GsMat camview, persp, sproj;
 
    GsVec eye(0,0,2), center(0,0,0), up(0,1,0);
+
    camview.lookat ( eye, center, up ); // set our 4x4 "camera" matrix
 
    float aspect=4.0f/3.0f, znear=0.1f, zfar=100.0f;
@@ -498,11 +510,11 @@ void AppWindow::glutDisplay ()
    // Draw:
    // if ( _viewaxis ) _axis.draw ( stransf, sproj );
 
-   myCubes.draw(stransf, sproj, _light);
+   for (int i = 0; i < myChunks.size(); i++) {
 
-   GsMat Chunk2;
-   Chunk2.translation(GsVec(0.0, 0.0, -1.0));
-   myCubes2.draw(stransf * Chunk2, sproj, _light);
+	   myChunks[i]->myChunk->draw(stransf * (*chunkLocs[i]), sproj, _light);
+
+   }
 
    GsMat cloudTransformation;
    computeCloudTransformation(cloudTransformation);
@@ -565,6 +577,65 @@ void AppWindow::glutDisplay ()
    // Swap buffers and draw:
    glFlush();         // flush the pipeline (usually not necessary)
    glutSwapBuffers(); // we were drawing to the back buffer, now bring it to the front
+}
+
+void AppWindow::checkNewChunks() {
+
+	int tempSize = myChunks.size();
+
+	for (int i = 0; i < tempSize; i++) {
+
+		if (moveX >= myChunks[i]->rightBound && !myChunks[i]->drawnRight) {
+
+			cout << "Hi";
+
+			SoCubes* tempCubes = new SoCubes();
+			tempCubes->init();
+
+			data.load(false, true, false, false);
+			tempCubes->build(data);
+
+			myChunks.push_back(new chunkStruc(tempCubes, myChunks[i]->topBound, myChunks[i]->rightBound + 1.0));
+
+
+
+			GsMat* tempMat = new GsMat();
+			tempMat->translation(GsVec(myChunks[i]->rightBound + 1.0, 0.0, myChunks[i]->topBound));
+
+			chunkLocs.push_back(tempMat);
+
+
+
+			myChunks[i]->drawnRight = true;
+
+		}
+
+		else if (moveZ <= myChunks[i]->topBound && !myChunks[i]->drawnTop) {
+
+			cout << "Hi";
+
+			SoCubes* tempCubes = new SoCubes();
+			tempCubes->init();
+
+			data.load(false, false, false, true);
+			tempCubes->build(data);
+
+			myChunks.push_back(new chunkStruc(tempCubes, myChunks[i]->topBound - 1.0, myChunks[i]->rightBound));
+
+
+			GsMat* tempMat = new GsMat();
+			tempMat->translation(GsVec(myChunks[i]->rightBound, 0.0, myChunks[i]->topBound - 1.0));
+
+			chunkLocs.push_back(tempMat);
+
+
+
+			myChunks[i]->drawnTop= true;
+
+		}
+
+	}
+
 }
 
 void AppWindow::computeCloudTransformation(GsMat& transformation) {

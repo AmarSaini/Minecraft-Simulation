@@ -31,7 +31,9 @@ class AppWindow : public GlutWindow
 	SoModel2 headShadow, bodyShadow, lArmShadow, rArmShadow, lLegShadow, rLegShadow;
 	SoModel3 background;
 
+	Terrain data;
 	SoCubes myCubes;
+	SoCubes myCubes2;
 	SoCloud myCloud;
 
 	GsArray<GsVec> myCurvePoints;

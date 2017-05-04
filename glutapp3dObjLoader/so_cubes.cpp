@@ -262,7 +262,7 @@ void SoCubes::init ()
 
 // build may be called everytime the object changes (not the case for this axis object):
 
-void SoCubes::build ( )
+void SoCubes::build (Terrain& data)
  {
 
 	P.size(0); T.size(0); N.size(0);

@@ -31,7 +31,6 @@ class SoCubes : public GlObjects
 	 GsMaterial _mtl;    // main material
 	 bool _phong;
 
-	Terrain data;
     int _numpoints;     // just saves the number of points
 
    public :
@@ -39,7 +38,7 @@ class SoCubes : public GlObjects
 	void createCube(float& myX, float& myY, float& myZ, float& sideLength, int& blockType);
     void init ();
 	int checkTop(int* topDirts);
-    void build ();
+    void build (Terrain& data);
     void draw (const GsMat& tr, const GsMat& pr, const GsLight& l);
  };
 

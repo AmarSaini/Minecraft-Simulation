@@ -22,9 +22,9 @@ AppWindow::AppWindow ( const char* label, int x, int y, int w, int h )
    bodyRotate = 0;
    lLegRotate = 0;
    rLegRotate = 0;
-   moveX = 0.0;
+   moveX = 0.5;
    moveY = 0.0;
-   moveZ = 0.0;
+   moveZ = 0.5;
    lLegCheck = true;
    rLegCheck = true;
    lArmCheck = true;
@@ -43,19 +43,19 @@ AppWindow::AppWindow ( const char* label, int x, int y, int w, int h )
 
    }
 
-   for (int i = 0; i < 12; i++) {
+   /*for (int i = 0; i < 12; i++) {
 
 	   cout << myCurvePoints[i] << endl;
 
-   }
+   }*/
 
    curvePath = evaluate_bspline(25, 3, myCurvePoints);
 
-   for (int i = 0; i < curvePath.size(); i++) {
+   /*for (int i = 0; i < curvePath.size(); i++) {
 
 	   cout << curvePath[i] << endl;
 
-   }
+   }*/
 
 
  }
@@ -79,6 +79,7 @@ void AppWindow::initPrograms ()
    background.init();
 
    myCubes.init();
+   myCubes2.init();
    myCloud.init();
 
    
@@ -199,7 +200,12 @@ void AppWindow::loadModel ( int model )
    // Background
 
    
-   background.build();
+   // background.build();
+
+   myCubes.build(data);
+   data.load(false, true, false, false);
+   myCubes2.build(data);
+
    myCloud.build();
 
    redraw();
@@ -464,10 +470,6 @@ void AppWindow::glutDisplay ()
     { _axis.build(1.0f); // axis has radius 1.0
     }
 
-   if (myCubes.changed) {
-	   myCubes.build();
-   }
-
    // Define our scene transformation:
    GsMat rx, ry, stransf;
    rx.rotx ( _rotx );
@@ -497,6 +499,10 @@ void AppWindow::glutDisplay ()
    // if ( _viewaxis ) _axis.draw ( stransf, sproj );
 
    myCubes.draw(stransf, sproj, _light);
+
+   GsMat Chunk2;
+   Chunk2.translation(GsVec(0.0, 0.0, -1.0));
+   myCubes2.draw(stransf * Chunk2, sproj, _light);
 
    GsMat cloudTransformation;
    computeCloudTransformation(cloudTransformation);

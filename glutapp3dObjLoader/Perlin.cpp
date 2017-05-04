@@ -523,20 +523,7 @@ public:
 					chunk[i][j][k] = (val < 0.5)? 1 : 2;
 				}
 				heightmap[i][j] = dim[2] - height/2;
-				surface_mean += chunk[i][j][0];
 			}
-		}
-
-		surface_mean /= 625;
-		if (surface_mean < 1.5)
-		{
-			dirt_id = 1;
-			stone_id = 2;
-		}
-		else
-		{
-			dirt_id = 2;
-			stone_id = 1;
 		}
 
 		for (int i = 0; i < dim[0]; ++i)

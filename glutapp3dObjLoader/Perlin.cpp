@@ -699,12 +699,14 @@ public:
 	int dirt_id;
 	int stone_id;
 	int air_id;
+	int dim[3];
 	Terrain(int worms = 17)
 	{
 		random_device rd;
 		generator.seed(rd()/17);
 
 		data = Terrain_plain();
+		dim[0] = data.dim[0]; dim[1] = data.dim[1]; dim[2] = data.dim[2];
 		for (int i = 0; i < worms; ++i)
 		{
 			diggers.push_back(Worm());

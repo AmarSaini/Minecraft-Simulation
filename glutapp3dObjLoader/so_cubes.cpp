@@ -273,16 +273,16 @@ void SoCubes::build ( )
 
    float sideLen = 2.0 / 50;
 
-   int blockType[50][50][10] = {0};
+   int blockType[25][25][10] = {0};
 
    for (int k = 0; k < 10; ++k)
    {
-	   for (int j = 0; j < 50; ++j)
+	   for (int j = 0; j < 25; ++j)
 	   {
-		   for (int i = 0; i < 50; ++i)
+		   for (int i = 0; i < 25; ++i)
 		   {
 
-
+			  // cout << i << ", " << j << ", " << k << endl;
 			   if (data.get(i,j,k) == data.dirt_id) {
 
 				   if (checkTop(blockType[i][j]) == 0) {

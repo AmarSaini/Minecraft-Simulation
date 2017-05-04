@@ -32,7 +32,32 @@ AppWindow::AppWindow ( const char* label, int x, int y, int w, int h )
    moving = 0;
    seconds = 0.0;
    frames = 0.0;
+   cloudFrames = 0.0;
    camMode = false;
+   curveIndex = 0;
+
+   for (int i = 0; i < 6; i++) {
+
+	   myCurvePoints.push() = GsVec(-1.0+(0.4*i), 0.8, -1.0 + (0.4*i));
+	   myCurvePoints.push() = GsVec(-0.8+(0.4*i), 0.4, -0.8 + (0.4*i));
+
+   }
+
+   for (int i = 0; i < 12; i++) {
+
+	   cout << myCurvePoints[i] << endl;
+
+   }
+
+   curvePath = evaluate_bspline(25, 3, myCurvePoints);
+
+   for (int i = 0; i < curvePath.size(); i++) {
+
+	   cout << curvePath[i] << endl;
+
+   }
+
+
  }
 
 void AppWindow::initPrograms ()
@@ -54,6 +79,7 @@ void AppWindow::initPrograms ()
    background.init();
 
    myCubes.init();
+   myCloud.init();
 
    
 
@@ -174,7 +200,7 @@ void AppWindow::loadModel ( int model )
 
    
    background.build();
-
+   myCloud.build();
 
    redraw();
 
@@ -470,8 +496,11 @@ void AppWindow::glutDisplay ()
    // Draw:
    // if ( _viewaxis ) _axis.draw ( stransf, sproj );
 
-
    myCubes.draw(stransf, sproj, _light);
+
+   GsMat cloudTransformation;
+   computeCloudTransformation(cloudTransformation);
+   myCloud.draw(stransf * cloudTransformation, sproj, _light);
 
    GsMat headTransformation;
    computeHeadTransformation(headTransformation);
@@ -532,6 +561,15 @@ void AppWindow::glutDisplay ()
    glutSwapBuffers(); // we were drawing to the back buffer, now bring it to the front
 }
 
+void AppWindow::computeCloudTransformation(GsMat& transformation) {
+
+	GsMat movement;
+
+	movement.translation(curvePath[curveIndex]);
+
+	transformation = movement;
+
+}
 
 void AppWindow::computeHeadTransformation(GsMat& transformation) {
 
@@ -735,10 +773,23 @@ void AppWindow::glutIdle() {
 
 			frames += 0.03;
 			_roty += 0.03;
-			glutPostRedisplay();
 
 		}
 
 	}
+
+	if (seconds > cloudFrames) {
+
+		cloudFrames += 0.1;
+		if (curveIndex == curvePath.size() - 1) {
+			curveIndex = 0;
+		}
+		else {
+			curveIndex++;
+		}
+
+	}
+
+	glutPostRedisplay();
 
 }

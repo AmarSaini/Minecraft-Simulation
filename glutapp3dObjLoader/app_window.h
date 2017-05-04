@@ -14,6 +14,9 @@
 # include "so_model2.h"
 # include "so_model3.h"
 # include "so_cubes.h"
+# include "curve_eval.h"
+# include "so_cloud.h"
+
 
 // The functionality of your application should be implemented inside AppWindow
 class AppWindow : public GlutWindow
@@ -29,6 +32,10 @@ class AppWindow : public GlutWindow
 	SoModel3 background;
 
 	SoCubes myCubes;
+	SoCloud myCloud;
+
+	GsArray<GsVec> myCurvePoints;
+	GsArray<GsVec> curvePath;
 
     // Scene data:
     bool  _viewaxis;
@@ -51,7 +58,9 @@ class AppWindow : public GlutWindow
 	int moving;
 	float seconds;
 	float frames;
+	float cloudFrames;
 	bool camMode;
+	int curveIndex;
 
    public :
     AppWindow ( const char* label, int x, int y, int w, int h );
@@ -59,6 +68,7 @@ class AppWindow : public GlutWindow
     void loadModel ( int model );
 	void animate();
     GsVec2 windowToScene ( const GsVec2& v );
+	void computeCloudTransformation(GsMat& transformation);
 	void computeHeadTransformation(GsMat& transformation);
 	void computeLArmTransformation(GsMat& transformation);
 	void computeRArmTransformation(GsMat& transformation);

@@ -518,7 +518,7 @@ public:
 			//cout << "lifespan: " << lifespan << endl;
 			vec.sum(width);
 			//cout << "direction: ";
-			vec.print();
+			//vec.print();
 			//cout << endl;
 			for (int i = 0; i < step; ++i)
 			{

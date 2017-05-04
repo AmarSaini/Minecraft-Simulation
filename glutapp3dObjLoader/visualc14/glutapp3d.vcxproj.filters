@@ -66,6 +66,8 @@
     <ClCompile Include="..\so_model3.cpp" />
     <ClCompile Include="..\Perlin.cpp" />
     <ClCompile Include="..\so_cubes.cpp" />
+    <ClCompile Include="..\curve_eval.cpp" />
+    <ClCompile Include="..\so_cloud.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\gsim\gs.h">
@@ -138,6 +140,8 @@
     <ClInclude Include="..\so_myobject.h">
       <Filter>ogl tools</Filter>
     </ClInclude>
+    <ClInclude Include="..\curve_eval.h" />
+    <ClInclude Include="..\so_cloud.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="myapp">

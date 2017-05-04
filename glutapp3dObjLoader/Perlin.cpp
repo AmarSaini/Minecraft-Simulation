@@ -116,6 +116,92 @@ public:
 			}
 	}
 
+	void shift(bool west, bool east, bool north, bool south)
+	{
+		if (west)
+		{
+
+			for (int j = 0; j < N+1; ++j)
+			{
+				for (int k = 0; k < N+1; ++k)
+				{
+					cube[N][j][k] = cube[0][j][k];
+ 				}
+			}
+			for (int i = 0; i < N; ++i)
+			{
+				for (int j = 0; j < N+1; ++j)
+				{
+					for (int k = 0; k < N+1; ++k)
+					{
+						cube[i][j][k].resample(); 
+					}
+				}
+			}
+		}
+		if (east)
+		{
+			for (int j = 0; j < N+1; ++j)
+			{
+				for (int k = 0; k < N+1; ++k)
+				{
+					cube[0][j][k] = cube[N][j][k];
+ 				}
+			}
+			for (int i = 1; i < N+1; ++i)
+			{
+				for (int j = 0; j < N+1; ++j)
+				{
+					for (int k = 0; k < N+1; ++k)
+					{
+						cube[i][j][k].resample(); 
+					}
+				}
+			}
+		}
+		if (north)
+		{
+			for (int i = 0; i < N+1; ++i)
+			{
+				for (int k = 0; k < N+1; ++k)
+				{
+					cube[i][0][k] = cube[i][N][k];
+ 				}
+			}
+			for (int i = 0; i < N+1; ++i)
+			{
+				for (int j = 0; j < N; ++j)
+				{
+					for (int k = 0; k < N+1; ++k)
+					{
+						cube[i][j][k].resample(); 
+					}
+				}
+			}
+		}
+		if (south)
+		{
+			for (int i = 0; i < N+1; ++i)
+			{
+				for (int k = 0; k < N+1; ++k)
+				{
+					cube[i][N][k] = cube[i][0][k];
+ 				}
+			}
+			for (int i = 0; i < N+1; ++i)
+			{
+				for (int j = 1; j < N+1; ++j)
+				{
+					for (int k = 0; k < N+1; ++k)
+					{
+						cube[i][j][k].resample(); 
+					}
+				}
+			}
+		}
+
+	}
+
 	void print()
 	{
 		for (int k = 0; k < N+1; ++k)
@@ -333,28 +419,28 @@ public:
 class Terrain_plain
 {
 	Grid3 cube;
-	int heightmap[50][50];
+	int heightmap[25][25];
 public:
 	int dirt_id;
 	int stone_id;
 	int air_id;
 	int dim[3];
-	int chunk[50][50][10];
+	int chunk[25][25][10];
 	Terrain_plain(int seed_size = 10)
 	{
-		dim[0] = 50; dim[1] = 50; dim[2] = 10;
+		dim[0] = 25; dim[1] = 25; dim[2] = 10;
 		air_id = 0;
 		cube = Grid3(seed_size);
 		cube.initialize();
 		double min, max;
 		min = max = cube.perlin3(0, 0, 0);
-		for (int i = 0; i < 50; ++i)
+		for (int i = 0; i < dim[0]; ++i)
 		{
-			for (int j = 0; j < 50; ++j)
+			for (int j = 0; j < dim[1]; ++j)
 			{
-				for (int k = 0; k < 10; ++k)
+				for (int k = 0; k < dim[2]; ++k)
 				{
-					double val = cube.perlin3(i/50.0, j/50.0, k/10.0);
+					double val = cube.perlin3(i/(double)dim[0], j/(double)dim[1], k/(double)dim[2]);
 					if (val > max)
 						max = val;
 					if (val < min)
@@ -364,23 +450,23 @@ public:
 		}
 
 		double surface_mean = 0;
-		for (int i = 0; i < 50; ++i)
+		for (int i = 0; i < dim[0]; ++i)
 		{
-			for (int j = 0; j < 50; ++j)
+			for (int j = 0; j < dim[1]; ++j)
 			{
 				double height = 0;
-				for (int k = 0; k < 10; ++k)
+				for (int k = 0; k < dim[2]; ++k)
 				{
-					double val = (cube.perlin3(i/50.0, j/50.0, k/10.0)-min)/(max-min);
+					double val = (cube.perlin3(i/(double)dim[0], j/(double)dim[1], k/(double)dim[2])-min)/(max-min);
 					height += val;
 					chunk[i][j][k] = (val < 0.5)? 1 : 2;
 				}
-				heightmap[i][j] = 10 - height/2;
+				heightmap[i][j] = dim[2] - height/2;
 				surface_mean += chunk[i][j][0];
 			}
 		}
 
-		surface_mean /= 2500;
+		surface_mean /= 625;
 		if (surface_mean < 1.5)
 		{
 			dirt_id = 1;
@@ -392,11 +478,72 @@ public:
 			stone_id = 1;
 		}
 
-		for (int i = 0; i < 50; ++i)
+		for (int i = 0; i < dim[0]; ++i)
 		{
-			for (int j = 0; j < 50; ++j)
+			for (int j = 0; j < dim[1]; ++j)
 			{
-				press(i, j, 10-heightmap[i][j]);
+				press(i, j, dim[2]-heightmap[i][j]);
+			}
+		}
+	}
+
+	// generates 24 blocks in a direction
+	// +i: north
+	// +j: east
+	void load(bool west = false, bool east = false, bool north = false, bool south = false)
+	{
+		cube.shift(west, east, north, south);
+		double min, max;
+		min = max = cube.perlin3(0, 0, 0);
+		for (int i = 0; i < dim[0]; ++i)
+		{
+			for (int j = 0; j < dim[1]; ++j)
+			{
+				for (int k = 0; k < dim[2]; ++k)
+				{
+					double val = cube.perlin3(i/(double)dim[0], j/(double)dim[1], k/(double)dim[2]);
+					if (val > max)
+						max = val;
+					if (val < min)
+						min = val;
+				}
+			}
+		}
+
+		double surface_mean = 0;
+		for (int i = 0; i < dim[0]; ++i)
+		{
+			for (int j = 0; j < dim[1]; ++j)
+			{
+				double height = 0;
+				for (int k = 0; k < dim[2]; ++k)
+				{
+					double val = (cube.perlin3(i/(double)dim[0], j/(double)dim[1], k/(double)dim[2])-min)/(max-min);
+					height += val;
+					chunk[i][j][k] = (val < 0.5)? 1 : 2;
+				}
+				heightmap[i][j] = dim[2] - height/2;
+				surface_mean += chunk[i][j][0];
+			}
+		}
+
+		surface_mean /= 625;
+		if (surface_mean < 1.5)
+		{
+			dirt_id = 1;
+			stone_id = 2;
+		}
+		else
+		{
+			dirt_id = 2;
+			stone_id = 1;
+		}
+
+		for (int i = 0; i < dim[0]; ++i)
+		{
+			for (int j = 0; j < dim[1]; ++j)
+			{
+				press(i, j, dim[2]-heightmap[i][j]);
 			}
 		}
 	}
@@ -463,11 +610,11 @@ public:
 	void print()
 	{
 		cout << "Terrain: " << endl;
-		for (int k = 0; k < 10; ++k)
+		for (int k = 0; k < dim[2]; ++k)
 		{
-			for (int j = 12; j < 38; ++j)
+			for (int j = dim[1]*0.25; j < dim[1]*0.75; ++j)
 			{
-				for (int i = 12; i < 38; ++i)
+				for (int i = dim[0]*0.25; i < dim[0]*0.75; ++i)
 				{
 					if (chunk[i][j][k] == air_id)
 						cout << "  air  ,";
@@ -515,11 +662,12 @@ public:
 
 		while (lifespan > 0)
 		{
-			//cout << "lifespan: " << lifespan << endl;
+			// cout << "lifespan: " << lifespan << endl;
 			vec.sum(width);
 			//cout << "direction: ";
 			//vec.print();
 			//cout << endl;
+
 			for (int i = 0; i < step; ++i)
 			{
 				mis.sum(width);
@@ -535,6 +683,8 @@ public:
 			old[1] = vec.y;
 			old[2] = vec.z;
 		}
+
+		lifespan = 170;
 	}
 };
 
@@ -569,6 +719,18 @@ public:
 		air_id = data.air_id;
 	}
 
+	void load(bool west, bool east, bool north, bool south)
+	{
+		data.load(west, east, north, south);
+
+		for (int i = 0; i < diggers.size(); ++i)
+		{
+			// cout << "digger #" << i << endl;
+			// diggers.push_back(Worm());
+			diggers[i].crawl(data, (int)generator()%data.dim[0], (int)generator()%data.dim[1], (int)generator()%data.dim[2]);
+		}
+	}
+
 	int get(int i, int j, int k){return data.get(i,j,k);}
 	void print(){data.print();}
 };
@@ -576,6 +738,10 @@ public:
 // int main(int argc, char const *argv[])
 // {
 // 	Terrain data = Terrain(7);
+
+// 	data.print();
+
+// 	data.load(true, false, false, false);
 
 // 	data.print();
 

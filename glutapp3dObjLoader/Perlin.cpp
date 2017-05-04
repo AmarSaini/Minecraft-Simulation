@@ -56,6 +56,21 @@ public:
 		y /= mag;
 		z /= mag;	}
 
+	void sum(int k)
+	{
+		double temp[3] = {0.0, 0.0, 0.0};
+		for (int i  = 0; i < k; ++i)
+		{
+			resample();
+			temp[0] += x;
+			temp[1] += y;
+			temp[2] += z;
+		}
+		x = temp[0];
+		y = temp[1];
+		z = temp[2];
+	}
+
 	void print()
 	{
 		cout << "(" << x << ", " << y << ", "<< z << ")";
@@ -315,7 +330,7 @@ public:
 	}
 };
 
-class Terrain
+class Terrain_plain
 {
 	Grid3 cube;
 	int heightmap[50][50];
@@ -323,9 +338,11 @@ public:
 	int dirt_id;
 	int stone_id;
 	int air_id;
+	int dim[3];
 	int chunk[50][50][10];
-	Terrain(int seed_size = 10)
+	Terrain_plain(int seed_size = 10)
 	{
+		dim[0] = 50; dim[1] = 50; dim[2] = 10;
 		air_id = 0;
 		cube = Grid3(seed_size);
 		cube.initialize();
@@ -400,6 +417,44 @@ public:
 		}
 	}
 
+	double set(int i, int j, int k, int type = 0, int width = 5)
+	{
+		int radius = width/2 + 1;
+		int mean, count;
+		mean = count = 0;
+
+		for (int x = i-radius; x < i+radius; ++x)
+		{
+			for (int y = j-radius; y < j + radius; ++y)
+			{
+				for (int z = k-radius; z < k +radius; ++z)
+				{
+					++count;
+					// cout << sqrt((x-i)*(x-i) + (y-j)*(y-j) + (z-k)*(z-k));
+					// cout << " at ( " << x << ", " << y << ", " << z << ")... ";
+					if ((x > 0 && x < dim[0]) && (y > 0 && y < dim[1]) && (z > 0 && z < dim[2]))
+					{
+						if (sqrt((x-i)*(x-i) + (y-j)*(y-j) + (z-k)*(z-k)) <= radius)
+						{
+							// cout << "hit" << endl;
+							chunk[x][y][z] = type;
+						}
+						// else
+							// cout << "miss" << endl;
+						++mean;
+					}
+					else
+					{
+						// cout << "miss" << endl;
+					}
+				}
+			}
+		}
+		mean /= count;
+
+		return mean;
+	}
+
 	int get(int i, int j, int k)
 	{
 		return chunk[i][j][k];
@@ -410,9 +465,9 @@ public:
 		cout << "Terrain: " << endl;
 		for (int k = 0; k < 10; ++k)
 		{
-			for (int j = 0; j < 20; ++j)
+			for (int j = 12; j < 38; ++j)
 			{
-				for (int i = 0; i < 20; ++i)
+				for (int i = 12; i < 38; ++i)
 				{
 					if (chunk[i][j][k] == air_id)
 						cout << "  air  ,";
@@ -427,3 +482,102 @@ public:
 		}
 	}
 };
+
+
+// either momentum or perlin
+class Worm
+{
+	//Grid3 cube;
+	GradVec vec, mis;
+	int lifespan;
+	int step;
+	int width;
+	double momentum, jitter;
+	int pos[3];
+
+public:
+	Worm()
+	{
+		//cube = Grid3(seed_size);
+		step = 5;
+		lifespan = 170;
+		width = 5;
+		momentum = 0.5;
+		jitter = 0.09;
+	}
+
+	void crawl(Terrain_plain& data ,int x = 0, int y = 0, int z = 0)
+	{
+		pos[0] = x; pos[1] = y; pos[2] = z;
+		double old[3] = {0.0, 0.0, 0.0};
+
+		data.set(pos[0], pos[1], pos[2]);
+
+		while (lifespan > 0)
+		{
+			//cout << "lifespan: " << lifespan << endl;
+			vec.sum(width);
+			//cout << "direction: ";
+			vec.print();
+			//cout << endl;
+			for (int i = 0; i < step; ++i)
+			{
+				mis.sum(width);
+				pos[0] += (int)(vec.x + old[0]*0.17*momentum + mis.x*jitter);
+				pos[1] += (int)(vec.y + old[1]*0.17*momentum + mis.y*jitter);
+				pos[2] += (int)(vec.z + old[2]*0.17*momentum + mis.z*jitter);
+
+				momentum += momentum * (data.set(pos[0], pos[1], pos[2])-0.5);
+
+				lifespan--;
+			}
+			old[0] = vec.x;
+			old[1] = vec.y;
+			old[2] = vec.z;
+		}
+	}
+};
+
+class Terrain
+{
+	Terrain_plain data;
+	vector<Worm> diggers;
+
+	mt19937 generator;
+
+public:
+	int dirt_id;
+	int stone_id;
+	int air_id;
+	Terrain(int worms = 17)
+	{
+		random_device rd;
+		generator.seed(rd()/17);
+
+		data = Terrain_plain();
+		for (int i = 0; i < worms; ++i)
+		{
+			diggers.push_back(Worm());
+			diggers[i].crawl(data, (int)generator()%data.dim[0], (int)generator()%data.dim[1], (int)generator()%data.dim[2]);
+		}
+
+		// digger.crawl(data);
+		//diggers.crawl(data, data.dim[0]/2, data.dim[1]/2, data.dim[2]-1);
+
+		dirt_id = data.dirt_id;
+		stone_id = data.stone_id;
+		air_id = data.air_id;
+	}
+
+	int get(int i, int j, int k){return data.get(i,j,k);}
+	void print(){data.print();}
+};
+
+// int main(int argc, char const *argv[])
+// {
+// 	Terrain data = Terrain(7);
+
+// 	data.print();
+
+// 	return 0;
+// }

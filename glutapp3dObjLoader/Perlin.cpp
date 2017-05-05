@@ -6,9 +6,6 @@
 
 using namespace std;
 
-
-
-
 class GradVec
 {
 	mt19937 generator;
@@ -504,7 +501,7 @@ public:
 					double val = (cube.perlin3(i/(double)dim[0], j/(double)dim[1], k/(double)dim[2])-min)/(max-min);
 					double rand = twister(1000.0);
 					rand = rand - int(rand) + 0.15;
-					cout << rand << " " << endl;
+					// cout << rand << " " << endl;
 					height += val - (val)*rand;
 					chunk[i][j][k] = (val < 0.5)? 1 : 2;
 				}
@@ -571,7 +568,7 @@ public:
 					double val = (cube.perlin3(i/(double)dim[0], j/(double)dim[1], k/(double)dim[2])-min)/(max-min);
 					double rand = twister(1000.0);
 					rand = rand - int(rand) + 0.5;
-					cout << rand << " " << endl;
+					// cout << rand << " " << endl;
 					height += val - (val)*rand;
 					chunk[i][j][k] = (val < 0.5) ? 1 : 2;
 				}

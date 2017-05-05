@@ -177,7 +177,7 @@ public:
 				}
 			}
 		}
-		if (north) // copy i0-i0.5
+		if (south) // copy i0-i0.5
 		{
 			for (int i = 0; i < N+1; ++i)
 			{
@@ -198,7 +198,7 @@ public:
 				}
 			}
 		}
-		if (south) // copy i0.5-i1
+		if (north) // copy i0.5-i1
 		{
 			for (int i = 0; i < N+1; ++i)
 			{
@@ -344,15 +344,23 @@ public:
 		double botback = dot011 + u*(dot111-dot011);
 		double back = topback + v*(botback-topback);
 
-		double botleft = dot010 + v*(dot011 - dot010);
+		/*double botleft = dot010 + v*(dot011 - dot010);
 		double botright = dot110 + v*(dot111 - dot110);
 		double top = topfront + w*(topback - topfront);
-		double bot = botleft + u*(botright - botleft);
+		double bot = botleft + u*(botright - botleft);*/
 
-		//double avg = front + w*(back-front);
-		double avg = top + v*(bot - top);
+		double avg = front + w*(back-front);
 
-		return avg;
+		// random_device rd;
+		
+		/*double rand = rd();
+		cout << rand << " -> ";
+		rand = rand*0.0001*0.1 - int(rand*0.0001);
+
+		cout << rand << endl;*/
+		
+
+		return avg; // +rand;
 	}
 };
 
@@ -446,14 +454,24 @@ class Terrain_plain
 {
 	Grid3 cube;
 	int heightmap[25][25];
+	mt19937 generator;
+
+	double twister(double d, int a = -100, int b = 100)
+	{
+		return ((generator())%(b-a)-a)/d;
+	}
 public:
 	int dirt_id;
 	int stone_id;
 	int air_id;
 	int dim[3];
 	int chunk[25][25][10];
+	
 	Terrain_plain(int seed_size = 10)
 	{
+		random_device rd;
+		generator.seed(rd()/17);
+
 		dim[0] = 25; dim[1] = 25; dim[2] = 10;
 		air_id = 0;
 		cube = Grid3(seed_size);
@@ -484,10 +502,15 @@ public:
 				for (int k = 0; k < dim[2]; ++k)
 				{
 					double val = (cube.perlin3(i/(double)dim[0], j/(double)dim[1], k/(double)dim[2])-min)/(max-min);
-					height += val;
+					double rand = twister(1000.0);
+					rand = rand - int(rand) + 0.15;
+					cout << rand << " " << endl;
+					height += val - (val)*rand;
 					chunk[i][j][k] = (val < 0.5)? 1 : 2;
 				}
-				heightmap[i][j] = dim[2] - height/2;
+				double rand = twister(1000.0);
+				rand = rand - int(rand) + 0.2;
+				heightmap[i][j] = dim[2] - height / 2;
 				surface_mean += chunk[i][j][0];
 			}
 		}
@@ -518,7 +541,7 @@ public:
 	// +j: east
 	void load(bool west = false, bool east = false, bool north = false, bool south = false)
 	{
-		// cube.shift(west, east, north, south);
+		cube.shift(west, east, north, south);
 
 		double min, max;
 		min = max = cube.perlin3(0, 0, 0);
@@ -546,10 +569,15 @@ public:
 				for (int k = 0; k < dim[2]; ++k)
 				{
 					double val = (cube.perlin3(i/(double)dim[0], j/(double)dim[1], k/(double)dim[2])-min)/(max-min);
-					height += val;
-					chunk[i][j][k] = (val < 0.5)? 1 : 2;
+					double rand = twister(1000.0);
+					rand = rand - int(rand) + 0.5;
+					cout << rand << " " << endl;
+					height += val - (val)*rand;
+					chunk[i][j][k] = (val < 0.5) ? 1 : 2;
 				}
-				heightmap[i][j] = dim[2] - height/2;
+				double rand = twister(1000.0);
+				rand = rand - int(rand) + 0.2;
+				heightmap[i][j] = dim[2] - height / 2 - floor(rand + 0.3);
 			}
 		}
 
@@ -561,35 +589,35 @@ public:
 			}
 		}
 
-		for (int i = 0; i < dim[0]; ++i)
-		{
-			for (int j = 0; j < dim[1]; ++j)
-			{
-				for (int k = 0; k < dim[2]; ++k)
-				{
-					if (north)
-					{ 
-						chunk[i][j][k] = chunk[dim[0]-1-i][j][k];
-						heightmap[i][j] = heightmap[dim[0]-1-i][j];
-					}
-					if (south)
-					{
-						chunk[dim[0]-1-i][j][k] = chunk[i][j][k];
-						heightmap[dim[0]-1-i][j] = heightmap[i][j];
-					}
-					if (east)
-					{
-						chunk[i][j][k] = chunk[i][dim[1]-1-i][k];
-						heightmap[i][j] = heightmap[i][dim[1]-1-i];
-					}
-					if (west)
-					{
-						chunk[i][dim[1]-1-i][k] = chunk[i][j][k];
-						heightmap[i][dim[1]-1-i] = heightmap[i][j];
-					}
-				}
-			}
-		}
+		// for (int i = 0; i < dim[0]; ++i)
+		// {
+		// 	for (int j = 0; j < dim[1]; ++j)
+		// 	{
+		// 		for (int k = 0; k < dim[2]; ++k)
+		// 		{
+		// 			if (east)
+		// 			{ 
+		// 				chunk[i][j][k] = chunk[dim[0]-1-i][j][k];
+		// 				heightmap[i][j] = heightmap[dim[0]-1-i][j];
+		// 			}
+		// 			if (west)
+		// 			{
+		// 				chunk[dim[0]-1-i][j][k] = chunk[i][j][k];
+		// 				heightmap[dim[0]-1-i][j] = heightmap[i][j];
+		// 			}
+		// 			if (south)
+		// 			{
+		// 				chunk[i][j][k] = chunk[i][dim[1]-1-i][k];
+		// 				heightmap[i][j] = heightmap[i][dim[1]-1-i];
+		// 			}
+		// 			if (north)
+		// 			{
+		// 				chunk[i][dim[1]-1-i][k] = chunk[i][j][k];
+		// 				heightmap[i][dim[1]-1-i] = heightmap[i][j];
+		// 			}
+		// 		}
+		// 	}
+		// }
 	}
 
 	void press(int i, int j, int down)
@@ -670,14 +698,14 @@ public:
 		return tempMap;
 	}
 
-	void print()
+	void print(int n = 0)
 	{
 		cout << "Terrain: " << endl;
-		for (int k = 0; k < dim[2]; ++k)
+		for (int k = n; k < dim[2]; ++k)
 		{
-			for (int j = dim[1]*0.25; j < dim[1]*0.75; ++j)
+			for (int j = 0; j < dim[1]; ++j)
 			{
-				for (int i = dim[0]*0.25; i < dim[0]*0.75; ++i)
+				for (int i = 0; i < dim[0]; ++i)
 				{
 					if (chunk[i][j][k] == air_id)
 						cout << "  air  ,";
@@ -800,30 +828,30 @@ public:
 	int getHeight(int i, int j){return data.getHeight(i,j);}
 	vector< vector<int> > getHeightMap(){return data.getHeightMap();}
 
-	void print(){data.print();}
+	void print(int n = 0){data.print(n);}
 };
 
 // int main(int argc, char const *argv[])
 // {
 // 	Terrain data = Terrain(7);
 
-// 	data.print();
+// 	data.print(6);
 
-// 	data.load(true, false, false, false);
+// 	data.load(false, true, false, false);
 
-// 	data.print();
+// 	data.print(6);
 
-// 	cout << "heightmap: " << endl;
-// 	vector< vector<int> > map = data.getHeightMap();
+// 	// cout << "heightmap: " << endl;
+// 	// vector< vector<int> > map = data.getHeightMap();
 
-// 	for (int i = 0; i < data.dim[0]; ++i)
-// 	{
-// 		for (int j = 0; j < data.dim[1]; ++j)
-// 		{
-// 			cout << map[i][j] << ", ";
-// 		}
-// 		cout << endl;
-// 	}
+// 	// for (int i = 0; i < data.dim[0]; ++i)
+// 	// {
+// 	// 	for (int j = 0; j < data.dim[1]; ++j)
+// 	// 	{
+// 	// 		cout << map[i][j] << ", ";
+// 	// 	}
+// 	// 	cout << endl;
+// 	// }
 
 // 	return 0;
 // }

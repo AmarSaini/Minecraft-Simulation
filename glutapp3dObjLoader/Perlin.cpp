@@ -47,9 +47,10 @@ public:
 
 	void random_samp()
 	{
-		x = twister(1000.0);
-		y = twister(1000.0);
-		z = twister(1000.0);
+		random_device rd;
+		x = rd()*1000.0;
+		y = rd()*1000.0;
+		z = rd()*1000.0;
 
 		double mag = sqrt(x*x + y*y + z*z);
 		x /= mag;
@@ -82,7 +83,7 @@ class Grid3
 	int N; // dimension of the 3d cube grid;
 	vector< vector< vector<GradVec> > > cube;
 public:
-	Grid3(int n = 10)
+	Grid3(int n = 16)
 	{
 		N = n;
 		vector< vector< vector<GradVec> > > tempVec(N+1, vector< vector<GradVec> >(N+1, vector<GradVec>(N+1)));
@@ -116,19 +117,35 @@ public:
 			}
 	}
 
+	void resample()
+	{
+		for (int i = 0; i < N + 1; ++i)
+		{
+			for (int j = 0; j < N + 1; ++j)
+			{
+				for (int k = 0; k < N + 1; ++k)
+				{
+					cube[i][j][k].random_samp();
+				}
+			}
+		}
+	}
+
 	void shift(bool west, bool east, bool north, bool south)
 	{
-		if (west)
+		//resample();
+		if (west) // copy j0-j0.5
 		{
 
 			for (int j = 0; j < N+1; ++j)
 			{
 				for (int k = 0; k < N+1; ++k)
 				{
-					cube[N][j][k] = cube[0][j][k];
+					for (int n = 0; n < N/2; ++n)
+						cube[N-n][j][k] = cube[n][j][k];
  				}
 			}
-			for (int i = 0; i < N; ++i)
+			for (int i = 0; i < N/2; ++i)
 			{
 				for (int j = 0; j < N+1; ++j)
 				{
@@ -139,16 +156,17 @@ public:
 				}
 			}
 		}
-		if (east)
+		if (east) // copy j0.5-j1
 		{
 			for (int j = 0; j < N+1; ++j)
 			{
 				for (int k = 0; k < N+1; ++k)
 				{
-					cube[0][j][k] = cube[N][j][k];
+					for (int n = 0; n < N/2; ++n)
+						cube[n][j][k] = cube[N-n][j][k];
  				}
 			}
-			for (int i = 1; i < N+1; ++i)
+			for (int i = N/2; i < N+1; ++i)
 			{
 				for (int j = 0; j < N+1; ++j)
 				{
@@ -159,18 +177,19 @@ public:
 				}
 			}
 		}
-		if (north)
+		if (north) // copy i0-i0.5
 		{
 			for (int i = 0; i < N+1; ++i)
 			{
 				for (int k = 0; k < N+1; ++k)
 				{
-					cube[i][0][k] = cube[i][N][k];
+					for (int n = 0; n < N/2; ++n)
+						cube[i][N-n][k] = cube[i][n][k];
  				}
 			}
 			for (int i = 0; i < N+1; ++i)
 			{
-				for (int j = 0; j < N; ++j)
+				for (int j = 0; j < N/2; ++j)
 				{
 					for (int k = 0; k < N+1; ++k)
 					{
@@ -179,18 +198,19 @@ public:
 				}
 			}
 		}
-		if (south)
+		if (south) // copy i0.5-i1
 		{
 			for (int i = 0; i < N+1; ++i)
 			{
 				for (int k = 0; k < N+1; ++k)
 				{
-					cube[i][N][k] = cube[i][0][k];
+					for (int n = 0; n < N/2; ++n)
+						cube[i][N-n][k] = cube[i][n][k];
  				}
 			}
 			for (int i = 0; i < N+1; ++i)
 			{
-				for (int j = 1; j < N+1; ++j)
+				for (int j = N/2; j < N+1; ++j)
 				{
 					for (int k = 0; k < N+1; ++k)
 					{
@@ -324,7 +344,13 @@ public:
 		double botback = dot011 + u*(dot111-dot011);
 		double back = topback + v*(botback-topback);
 
-		double avg = front + w*(back-front);
+		double botleft = dot010 + v*(dot011 - dot010);
+		double botright = dot110 + v*(dot111 - dot110);
+		double top = topfront + w*(topback - topfront);
+		double bot = botleft + u*(botright - botleft);
+
+		//double avg = front + w*(back-front);
+		double avg = top + v*(bot - top);
 
 		return avg;
 	}
@@ -492,7 +518,8 @@ public:
 	// +j: east
 	void load(bool west = false, bool east = false, bool north = false, bool south = false)
 	{
-		cube.shift(west, east, north, south);
+		// cube.shift(west, east, north, south);
+
 		double min, max;
 		min = max = cube.perlin3(0, 0, 0);
 		for (int i = 0; i < dim[0]; ++i)
@@ -531,6 +558,36 @@ public:
 			for (int j = 0; j < dim[1]; ++j)
 			{
 				press(i, j, dim[2]-heightmap[i][j]);
+			}
+		}
+
+		for (int i = 0; i < dim[0]; ++i)
+		{
+			for (int j = 0; j < dim[1]; ++j)
+			{
+				for (int k = 0; k < dim[2]; ++k)
+				{
+					if (north)
+					{ 
+						chunk[i][j][k] = chunk[dim[0]-1-i][j][k];
+						heightmap[i][j] = heightmap[dim[0]-1-i][j];
+					}
+					if (south)
+					{
+						chunk[dim[0]-1-i][j][k] = chunk[i][j][k];
+						heightmap[dim[0]-1-i][j] = heightmap[i][j];
+					}
+					if (east)
+					{
+						chunk[i][j][k] = chunk[i][dim[1]-1-i][k];
+						heightmap[i][j] = heightmap[i][dim[1]-1-i];
+					}
+					if (west)
+					{
+						chunk[i][dim[1]-1-i][k] = chunk[i][j][k];
+						heightmap[i][dim[1]-1-i] = heightmap[i][j];
+					}
+				}
 			}
 		}
 	}
@@ -592,6 +649,25 @@ public:
 	int get(int i, int j, int k)
 	{
 		return chunk[i][j][k];
+	}
+
+	int getHeight(int i, int j)
+	{
+		return heightmap[i][j]  + 1;
+	}
+
+	vector< vector<int> > getHeightMap()
+	{
+		vector< vector<int> > tempMap (dim[0], vector<int>(dim[1]));
+
+		for (int i = 0; i < dim[0]; ++i)
+		{
+			for (int j = 0; j < dim[1]; ++j)
+			{
+				tempMap[i][j] = heightmap[i][j];
+			}
+		}
+		return tempMap;
 	}
 
 	void print()
@@ -721,6 +797,9 @@ public:
 	}
 
 	int get(int i, int j, int k){return data.get(i,j,k);}
+	int getHeight(int i, int j){return data.getHeight(i,j);}
+	vector< vector<int> > getHeightMap(){return data.getHeightMap();}
+
 	void print(){data.print();}
 };
 
@@ -733,6 +812,18 @@ public:
 // 	data.load(true, false, false, false);
 
 // 	data.print();
+
+// 	cout << "heightmap: " << endl;
+// 	vector< vector<int> > map = data.getHeightMap();
+
+// 	for (int i = 0; i < data.dim[0]; ++i)
+// 	{
+// 		for (int j = 0; j < data.dim[1]; ++j)
+// 		{
+// 			cout << map[i][j] << ", ";
+// 		}
+// 		cout << endl;
+// 	}
 
 // 	return 0;
 // }

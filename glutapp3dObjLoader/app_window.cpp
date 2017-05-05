@@ -617,7 +617,7 @@ void AppWindow::checkNewChunks() {
 			SoCubes* tempCubes = new SoCubes();
 			tempCubes->init();
 
-			data.load(false, false, false, true);
+			data.load(false, false, true, false);
 			tempCubes->build(data);
 
 			myChunks.push_back(new chunkStruc(tempCubes, myChunks[i]->topBound - 1.0, myChunks[i]->rightBound));

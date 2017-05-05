@@ -22,9 +22,9 @@ AppWindow::AppWindow ( const char* label, int x, int y, int w, int h )
    bodyRotate = 0;
    lLegRotate = 0;
    rLegRotate = 0;
-   moveX = -0.5;
+   moveX = -0.98;
    moveY = 0.0;
-   moveZ = 0.5;
+   moveZ = 0.98;
    lLegCheck = true;
    rLegCheck = true;
    lArmCheck = true;
@@ -35,6 +35,18 @@ AppWindow::AppWindow ( const char* label, int x, int y, int w, int h )
    cloudFrames = 0.0;
    camMode = false;
    curveIndex = 0;
+
+   heightIndexI = 1;
+   heightIndexJ = 0;
+   indexITracker = 0;
+   indexJTracker = 0;
+
+   chunkRows = 3;
+   chunkColumns = 3;
+   currentRow = 0;
+   currentColumn = 0;
+
+   glClearColor(66.0 / 255.0, 241.0 / 255.0, 244.0 / 255.0, 1.0);
 
    for (int i = 0; i < 6; i++) {
 
@@ -80,15 +92,59 @@ void AppWindow::initPrograms ()
    
    SoCubes* myCubes = new SoCubes;
    myCubes->init();
+   myCubes->build(data);
+
+   vector<chunkStruc*> myChunkRow;
 
 
-   myChunks.push_back(new chunkStruc(myCubes, 0.0, 0.0));
+   myChunkRow.push_back(new chunkStruc(myCubes, data.getHeightMap(), 0.0, 1.0, -1.0, 0.0));
+   myChunkRow.push_back(new chunkStruc());
+   myChunkRow.push_back(new chunkStruc());
+
+   myChunks.push_back(myChunkRow);
+
+
+   vector<chunkStruc*> emptyRow;
+   emptyRow.push_back(new chunkStruc());
+   emptyRow.push_back(new chunkStruc());
+   emptyRow.push_back(new chunkStruc());
+   myChunks.push_back(emptyRow);
+
+   vector<chunkStruc*> emptyRow2;
+   emptyRow2.push_back(new chunkStruc());
+   emptyRow2.push_back(new chunkStruc());
+   emptyRow2.push_back(new chunkStruc());
+   myChunks.push_back(emptyRow2);
+
+
+
 
    GsMat* tempMat = new GsMat();
 
    tempMat->translation(GsVec(0.0, 0.0, 0.0));
 
-   chunkLocs.push_back(tempMat);
+
+   vector<GsMat*> myMatRow;
+
+   myMatRow.push_back(tempMat);
+   myMatRow.push_back(new GsMat());
+   myMatRow.push_back(new GsMat());
+
+   chunkLocs.push_back(myMatRow);
+
+
+   vector<GsMat*> tempRow;
+   tempRow.push_back(new GsMat());
+   tempRow.push_back(new GsMat());
+   tempRow.push_back(new GsMat());
+   chunkLocs.push_back(tempRow);
+
+   vector<GsMat*> tempRow2;
+   tempRow2.push_back(new GsMat());
+   tempRow2.push_back(new GsMat());
+   tempRow2.push_back(new GsMat());
+   chunkLocs.push_back(tempRow2);
+
 
    myCloud.init();
 
@@ -212,8 +268,6 @@ void AppWindow::loadModel ( int model )
 
    
    // background.build();
-
-   myChunks[0]->myChunk->build(data);
 
    myCloud.build();
 
@@ -373,6 +427,13 @@ void AppWindow::glutSpecial ( int key, int x, int y )
     { case GLUT_KEY_LEFT:
 		
 		moveZ -= 0.01;
+		indexJTracker++;
+
+		if (indexJTracker == 4) {
+			heightIndexJ++;
+			indexJTracker = 0;
+		}
+
 		if (moving == 0 || moving == 1 || moving == 2 || moving == 3) {
 
 			headRotate = 0;
@@ -390,6 +451,13 @@ void AppWindow::glutSpecial ( int key, int x, int y )
       case GLUT_KEY_RIGHT:
 
 		  moveZ += 0.01;
+		  indexJTracker--;
+
+		  if (indexJTracker == -4) {
+			  heightIndexJ--;
+			  indexJTracker = 0;
+		  }
+
 		  if (moving == 0 || moving == 1 || moving == 2 || moving == 4) {
 
 			  headRotate = 0;
@@ -408,6 +476,13 @@ void AppWindow::glutSpecial ( int key, int x, int y )
       case GLUT_KEY_UP:
 
 		  moveX += 0.01;
+		  indexITracker++;
+
+		  if (indexITracker == 4) {
+			  heightIndexI++;
+			  indexITracker = 0;
+		  }
+
 		  if (moving == 0 || moving == 2 || moving == 3 || moving == 4) {
 
 			  headRotate = 0;
@@ -425,6 +500,13 @@ void AppWindow::glutSpecial ( int key, int x, int y )
       case GLUT_KEY_DOWN:
 
 		  moveX -= 0.01;
+		  indexITracker--;
+
+		  if (indexITracker == -4) {
+			  heightIndexI--;
+			  indexITracker = 0;
+		  }
+
 		  if (moving == 0 || moving == 1 || moving == 3 || moving == 4) {
 
 			  headRotate = 0;
@@ -481,6 +563,8 @@ void AppWindow::glutDisplay ()
 
    checkNewChunks();
 
+   fixHeight();
+
    // Define our scene transformation:
    GsMat rx, ry, stransf;
    rx.rotx ( _rotx );
@@ -510,9 +594,15 @@ void AppWindow::glutDisplay ()
    // Draw:
    // if ( _viewaxis ) _axis.draw ( stransf, sproj );
 
-   for (int i = 0; i < myChunks.size(); i++) {
+   for (int i = 0; i < chunkRows; i++) {
 
-	   myChunks[i]->myChunk->draw(stransf * (*chunkLocs[i]), sproj, _light);
+	   for (int j = 0; j < chunkColumns; j++) {
+
+		   if (myChunks[i][j]->exists) {
+			   myChunks[i][j]->myChunk->draw(stransf * (*chunkLocs[i][j]), sproj, _light);
+		   }
+
+	   }
 
    }
 
@@ -546,7 +636,7 @@ void AppWindow::glutDisplay ()
 
 
 
-   GsMat headShadowMatrix;
+   /*GsMat headShadowMatrix;
    computeShadowMatrix(headShadowMatrix);
    headShadow.draw(stransf * headShadowMatrix * headTransformation, sproj, _light);
 
@@ -568,7 +658,7 @@ void AppWindow::glutDisplay ()
 
    GsMat rLegShadowMatrix;
    computeShadowMatrix(rLegShadowMatrix);
-   rLegShadow.draw(stransf * rLegShadowMatrix  * rLegTransformation, sproj, _light);
+   rLegShadow.draw(stransf * rLegShadowMatrix  * rLegTransformation, sproj, _light);*/
 
    //GsMat backgroundMatrix;
    //computeBackgroundTransformation(backgroundMatrix);
@@ -579,62 +669,236 @@ void AppWindow::glutDisplay ()
    glutSwapBuffers(); // we were drawing to the back buffer, now bring it to the front
 }
 
+void AppWindow::fixHeight() {
+
+	int blocksAbove;
+
+	//cout << currentRow << " " << currentColumn << endl;
+
+	if (heightIndexI == 25 && heightIndexJ < myChunks[currentRow][currentColumn]->heightMap.size()) {
+
+		blocksAbove = 10 - (myChunks[currentRow][currentColumn]->heightMap[heightIndexJ][24] + 1);
+
+		//cout << blocksAbove << " " << heightIndexI << " " << heightIndexJ << endl;
+
+		//cout << moveX << " " << moveZ << endl;
+
+		moveY = -0.04 * blocksAbove;
+
+	}
+
+	else if (heightIndexJ < myChunks[currentRow][currentColumn]->heightMap.size() && heightIndexI < myChunks[currentRow][currentColumn]->heightMap[0].size()) {
+
+		blocksAbove = 10 - (myChunks[currentRow][currentColumn]->heightMap[heightIndexJ][heightIndexI] + 1);
+
+		//cout << blocksAbove << " " << heightIndexI << " " << heightIndexJ << endl;
+
+		//cout << moveX << " " << moveZ << endl;
+
+		moveY = -0.04 * blocksAbove;
+
+	}
+
+}
+
 void AppWindow::checkNewChunks() {
 
-	int tempSize = myChunks.size();
+	bool found = false;
 
-	for (int i = 0; i < tempSize; i++) {
+	for (int i = 0; i < chunkRows; i++) {
 
-		if (moveX >= myChunks[i]->rightBound && !myChunks[i]->drawnRight) {
+		for (int j = 0; j < chunkColumns; j++)
 
-			cout << "Hi";
+		if (moveX >= myChunks[i][j]->leftBound && moveX <= myChunks[i][j]->rightBound && moveZ <= myChunks[i][j]->bottomBound && moveZ >= myChunks[i][j]->topBound) {
 
-			SoCubes* tempCubes = new SoCubes();
-			tempCubes->init();
+			if (currentRow != i) {
 
-			data.load(false, true, false, false);
-			tempCubes->build(data);
+				if (i - currentRow < 0) {
 
-			myChunks.push_back(new chunkStruc(tempCubes, myChunks[i]->topBound, myChunks[i]->rightBound + 1.0));
+					heightIndexJ = 24;
 
+				}
 
+				else {
 
-			GsMat* tempMat = new GsMat();
-			tempMat->translation(GsVec(myChunks[i]->rightBound + 1.0, 0.0, myChunks[i]->topBound));
+					heightIndexJ = 0;
 
-			chunkLocs.push_back(tempMat);
+				}
 
+				currentRow = i;
+				cout << currentRow << " " << currentColumn << endl;
+			}
+			
+			if (currentColumn != j) {
 
+				if (j - currentColumn < 0) {
 
-			myChunks[i]->drawnRight = true;
+					heightIndexI = 25;
+
+				}
+
+				else {
+
+					heightIndexI = 0;
+
+				}
+
+				currentColumn = j;
+			}
+
+			found = true;
+			break;
 
 		}
 
-		else if (moveZ <= myChunks[i]->topBound && !myChunks[i]->drawnTop) {
+		if (found) {
+			break;
+		}
 
-			cout << "Hi";
+	}
 
-			SoCubes* tempCubes = new SoCubes();
-			tempCubes->init();
+	// Right
+	if (currentColumn < chunkColumns - 1) {
 
+		if (moveX > myChunks[currentRow][currentColumn]->rightBound && !myChunks[currentRow][currentColumn + 1]->exists) {
+
+			cout << "Right Generation" << endl;
+
+			SoCubes* myCubes = new SoCubes;
+			myCubes->init();
+			data.load(false, true, false, false);
+			myCubes->build(data);
+
+
+			chunkStruc tempStruc = chunkStruc(myCubes, data.getHeightMap(), myChunks[currentRow][currentColumn]->topBound, myChunks[currentRow][currentColumn]->bottomBound,
+				myChunks[currentRow][currentColumn]->leftBound + 1.0, myChunks[currentRow][currentColumn]->rightBound + 1.0);
+
+			*myChunks[currentRow][currentColumn + 1] = tempStruc;
+
+
+
+			GsMat tempMat;
+
+			tempMat.translation(GsVec(myChunks[currentRow][currentColumn]->rightBound + 1.0, 0.0, myChunks[currentRow][currentColumn]->topBound));
+
+			*chunkLocs[currentRow][currentColumn + 1] = tempMat;
+
+
+			currentColumn++;
+
+			heightIndexI = 0;
+
+		}
+
+
+	}
+
+	// Top
+	if (currentRow < chunkRows - 1) {
+
+		if (moveZ < myChunks[currentRow][currentColumn]->topBound && !myChunks[currentRow + 1][currentColumn]->exists) {
+
+			cout << "Top Generation" << endl;
+
+			SoCubes* myCubes = new SoCubes;
+			myCubes->init();
 			data.load(false, false, true, false);
-			tempCubes->build(data);
-
-			myChunks.push_back(new chunkStruc(tempCubes, myChunks[i]->topBound - 1.0, myChunks[i]->rightBound));
+			myCubes->build(data);
 
 
-			GsMat* tempMat = new GsMat();
-			tempMat->translation(GsVec(myChunks[i]->rightBound, 0.0, myChunks[i]->topBound - 1.0));
+			chunkStruc tempStruc = chunkStruc(myCubes, data.getHeightMap(), myChunks[currentRow][currentColumn]->topBound - 1.0, myChunks[currentRow][currentColumn]->bottomBound - 1.0,
+				myChunks[currentRow][currentColumn]->leftBound, myChunks[currentRow][currentColumn]->rightBound);
 
-			chunkLocs.push_back(tempMat);
+			*myChunks[currentRow + 1][currentColumn] = tempStruc;
 
 
 
-			myChunks[i]->drawnTop= true;
+			GsMat tempMat;
+
+			tempMat.translation(GsVec(myChunks[currentRow][currentColumn]->rightBound, 0.0, myChunks[currentRow][currentColumn]->topBound - 1.0));
+
+			*chunkLocs[currentRow + 1][currentColumn] = tempMat;
+
+
+			currentRow++;
+
+			heightIndexJ = 0;
 
 		}
 
 	}
+
+	// Left
+	if (currentColumn != 0) {
+
+		if (moveX < myChunks[currentRow][currentColumn]->leftBound && !myChunks[currentRow][currentColumn - 1]->exists) {
+
+			cout << "Left Generation" << endl;
+
+			SoCubes* myCubes = new SoCubes;
+			myCubes->init();
+			data.load(true, false, false, false);
+			myCubes->build(data);
+
+
+			chunkStruc tempStruc = chunkStruc(myCubes, data.getHeightMap(), myChunks[currentRow][currentColumn]->topBound, myChunks[currentRow][currentColumn]->bottomBound,
+				myChunks[currentRow][currentColumn]->leftBound - 1.0, myChunks[currentRow][currentColumn]->rightBound - 1.0);
+
+			*myChunks[currentRow][currentColumn - 1] = tempStruc;
+
+
+
+			GsMat tempMat;
+
+			tempMat.translation(GsVec(myChunks[currentRow][currentColumn]->rightBound - 1.0, 0.0, myChunks[currentRow][currentColumn]->topBound));
+
+			*chunkLocs[currentRow][currentColumn - 1] = tempMat;
+
+
+			currentColumn--;
+
+			heightIndexI = 25;
+
+		}
+
+
+	}
+
+	// Bottom
+	if (currentRow != 0) {
+
+		if (moveZ > myChunks[currentRow][currentColumn]->bottomBound && !myChunks[currentRow - 1][currentColumn]->exists) {
+
+			cout << "Bottom Generation" << endl;
+
+			SoCubes* myCubes = new SoCubes;
+			myCubes->init();
+			data.load(false, false, false, true);
+			myCubes->build(data);
+
+
+			chunkStruc tempStruc = chunkStruc(myCubes, data.getHeightMap(), myChunks[currentRow][currentColumn]->topBound + 1.0, myChunks[currentRow][currentColumn]->bottomBound + 1.0,
+				myChunks[currentRow][currentColumn]->leftBound, myChunks[currentRow][currentColumn]->rightBound);
+
+			*myChunks[currentRow - 1][currentColumn] = tempStruc;
+
+
+
+			GsMat tempMat;
+
+			tempMat.translation(GsVec(myChunks[currentRow][currentColumn]->rightBound, 0.0, myChunks[currentRow][currentColumn]->topBound + 1.0));
+
+			*chunkLocs[currentRow - 1][currentColumn] = tempMat;
+
+
+			currentRow--;
+
+			heightIndexJ = 24;
+
+		}
+
+	}
+
 
 }
 

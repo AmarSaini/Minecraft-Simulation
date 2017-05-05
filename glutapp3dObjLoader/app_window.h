@@ -20,22 +20,26 @@
 class chunkStruc {
 public:
 	SoCubes* myChunk;
+	vector<vector< int > > heightMap;
 	double topBound;
+	double bottomBound;
+	double leftBound;
 	double rightBound;
-	bool drawnTop;
-	bool drawnRight;
+	bool exists = false;
 
 	chunkStruc() {
 
 	}
 
-	chunkStruc(SoCubes* myChunk1, double topBound1, double rightBound1) {
+	chunkStruc(SoCubes* myChunk1, vector<vector< int > > heightMap1, double topBound1, double bottomBound1, double leftBound1, double rightBound1) {
 
+		heightMap = heightMap1;
 		myChunk = myChunk1;
 		topBound = topBound1;
+		bottomBound = bottomBound1;
+		leftBound = leftBound1;
 		rightBound = rightBound1;
-		drawnTop = false;
-		drawnRight = false;
+		exists = true;
 
 	}
 
@@ -56,13 +60,25 @@ class AppWindow : public GlutWindow
 
 	Terrain data;
 
-	vector<chunkStruc*> myChunks;
-	vector<GsMat*> chunkLocs;
+	vector<vector< chunkStruc* > > myChunks;
+	vector<vector< GsMat* >> chunkLocs;
 
 	SoCloud myCloud;
 
 	GsArray<GsVec> myCurvePoints;
 	GsArray<GsVec> curvePath;
+
+
+	int heightIndexI;
+	int heightIndexJ;
+	int indexITracker;
+	int indexJTracker;
+
+	int currentRow;
+	int currentColumn;
+
+	int chunkRows;
+	int chunkColumns;
 
     // Scene data:
     bool  _viewaxis;
@@ -95,6 +111,7 @@ class AppWindow : public GlutWindow
     void loadModel ( int model );
 	void animate();
     GsVec2 windowToScene ( const GsVec2& v );
+	void fixHeight();
 	void checkNewChunks();
 	void computeCloudTransformation(GsMat& transformation);
 	void computeHeadTransformation(GsMat& transformation);

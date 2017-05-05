@@ -268,7 +268,7 @@ void SoCubes::build (Terrain& data)
 	P.size(0); T.size(0); N.size(0);
    
 	float xCord = -1.0;
-   float yCord = -0.1;
+   float yCord = 0.0;
    float zCord = 1.0;
 
    float sideLen = 2.0 / 50;

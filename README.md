@@ -7,3 +7,5 @@ This simulation required the use of the following concepts:
 4. Texture Mapping
 5. Shadow Computation via Ray Tracing
 6. Trajectory Computation via Bézier Curves (for the movement paths of clouds)
+
+![Minecraft Simulation Preview](https://raw.githubusercontent.com/AmarSaini/Minecraft-Simulation/master/preview.png)

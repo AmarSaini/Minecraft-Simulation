@@ -1,4 +1,4 @@
-# Graphics-Project
+# Minecraft-Simulation
 A project that simulated the famous game, "Minecraft", using freeglut (OpenGL).
 This simulation required the use of the following concepts:
 1. Hierarchical Objects
